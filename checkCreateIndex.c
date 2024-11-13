@@ -22,6 +22,7 @@ void checkCreateIndex(const char * indexName)
     /* check file index has been created */
     /* and first TWO stored number are -1 */
     indexFileHandler = fopen(indexName, "r");
+    printf("INDEX");
     for (i = 0; i < 2; i++) {
         fread(&num, sizeof(int), 1, indexFileHandler);
         if (num != -1) {
