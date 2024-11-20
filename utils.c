@@ -1,10 +1,13 @@
 #include "utils.h"
 #include <string.h>
+#define BUFFER_LENGTH 100
 
 int no_deleted_registers = NO_DELETED_REGISTERS;
 
 void replaceExtensionByIdx(const char *fileName, char * indexName) {
-    indexName = strtok((char*)fileName, ".");
+    char name[BUFFER_LENGTH];
+    strcpy(name, fileName);
+    indexName = strtok(name, ".");
     strcat(indexName, ".idx");
     return;
 }
@@ -13,14 +16,18 @@ void replaceExtensionByIdx(const char *fileName, char * indexName) {
 bool createTable(const char * tableName) {
     FILE *f = NULL;
     char *indexName = "\0";
+    int element = -1;
 
-    f=fopen(tableName, "r");
+    f=fopen(tableName, "rb");
     if(f == NULL){
-        f=fopen(tableName, "w");
+        f=fopen(tableName, "wb");
         if(f == NULL){
             return false;
         }
-        fprintf(f, "-1");
+        if(fwrite(&element, sizeof(int), 1, f)!=1){
+            fclose(f);
+            return false;
+        }
     }
 
     replaceExtensionByIdx(tableName, indexName);
@@ -36,18 +43,19 @@ bool createTable(const char * tableName) {
 
 bool createIndex(const char *indexName) {
     FILE *f = NULL;
-    int element=-1;
+    int element1 = -1;
+    int element2 = -1;
     f=fopen(indexName, "rb");
     if(f == NULL){
         f=fopen(indexName, "wb");
         if(f == NULL){
             return false;
         }
-        if(fwrite(&element, sizeof(int), 1, f)!=1){
+        if(fwrite(&element1, sizeof(int), 1, f)!=1){
             fclose(f);
             return false;
         }
-        if(fwrite(&element, sizeof(int), 1, f)!=1){
+        if(fwrite(&element2, sizeof(int), 1, f)!=1){
             fclose(f);
             return false;
         }

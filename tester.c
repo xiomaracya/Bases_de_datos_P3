@@ -44,8 +44,8 @@ int main() {
      * implement it
      * checkReplaceExtensionByIdx(tableName, indexName); */
     checkCreateIndex(indexName);
-    /*checkCreateTable(tableName);
-    createTestFiles(tableName, indexName);
+    checkCreateTable(tableName);
+    /*createTestFiles(tableName, indexName);
     checkPrint(indexName);
     checkFindKey(indexName);
     checkAddIndexEntry(indexName);*/
