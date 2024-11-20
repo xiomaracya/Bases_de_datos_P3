@@ -36,9 +36,21 @@ bool createTable(const char * tableName) {
 
 bool createIndex(const char *indexName) {
     FILE *f = NULL;
-    f=fopen(indexName, "w");
+    int element=-1;
+    f=fopen(indexName, "rb");
     if(f == NULL){
-        return false;
+        f=fopen(indexName, "wb");
+        if(f == NULL){
+            return false;
+        }
+        if(fwrite(&element, sizeof(int), 1, f)!=1){
+            fclose(f);
+            return false;
+        }
+        if(fwrite(&element, sizeof(int), 1, f)!=1){
+            fclose(f);
+            return false;
+        }
     }
 
     fclose(f);

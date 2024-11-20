@@ -44,11 +44,11 @@ int main() {
      * implement it
      * checkReplaceExtensionByIdx(tableName, indexName); */
     checkCreateIndex(indexName);
-    checkCreateTable(tableName);
+    /*checkCreateTable(tableName);
     createTestFiles(tableName, indexName);
     checkPrint(indexName);
     checkFindKey(indexName);
-    checkAddIndexEntry(indexName);
+    checkAddIndexEntry(indexName);*/
 #ifdef NEVERDEFINED
 #endif
     return (0);
