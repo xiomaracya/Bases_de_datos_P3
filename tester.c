@@ -15,10 +15,6 @@
 
 #include "tester.h"
 
-Node a[TEST_ARRAY_SIZE];
-char sort_a[SORTED_TEST_ARRAY_SIZE][PK_SIZE+1];
-Book b[TEST_ARRAY_SIZE];
-
 void checkReplaceExtensionByIdx(const char * tableName,
                                 const char * indexName);
 void checkCreateIndex(const char * indexName);
@@ -28,6 +24,10 @@ void checkPrint(const char * indexName);
 void createTestIndexFile(const char * indexName);
 void checkFindKey(const char * indexName);
 void checkAddIndexEntry(const char * indexName);
+
+Node a[TEST_ARRAY_SIZE];
+char sort_a[SORTED_TEST_ARRAY_SIZE][PK_SIZE+1];
+Book b[TEST_ARRAY_SIZE];
 
 
 int main() {
@@ -45,10 +45,10 @@ int main() {
      * checkReplaceExtensionByIdx(tableName, indexName); */
     checkCreateIndex(indexName);
     checkCreateTable(tableName);
-    /*createTestFiles(tableName, indexName);
+    createTestFiles(tableName, indexName);
     checkPrint(indexName);
     checkFindKey(indexName);
-    checkAddIndexEntry(indexName);*/
+    checkAddIndexEntry(indexName);
 #ifdef NEVERDEFINED
 #endif
     return (0);

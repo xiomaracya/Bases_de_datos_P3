@@ -1,5 +1,6 @@
 #include "utils.h"
 #include <string.h>
+#include <stdlib.h>
 #define BUFFER_LENGTH 100
 
 int no_deleted_registers = NO_DELETED_REGISTERS;
@@ -66,11 +67,55 @@ bool createIndex(const char *indexName) {
 }
 void printnode(size_t _level, size_t level,
                FILE * indexFileHandler, int node_id, char side) {
+    
+    int size, zero, offset=0;
+    char pk[5], *long_var;
+    printf("OK");
+    if(fread(pk, sizeof(char), 4, indexFileHandler)!=4){
+        printf("ERROR");
+        return;
+    }
+    if(fread(&size, sizeof(int), 1, indexFileHandler)!=1){
+        printf("ERROR");
+        return;
+    }
+    if(fread(&zero, sizeof(int), 3, indexFileHandler)!=3){
+        printf("ERROR");
+        return;
+    }
+    long_var = (char*)malloc(sizeof(char)*size);
+    if(long_var==NULL){
+        return;
+    }
+    if(fread(long_var, sizeof(char), size, indexFileHandler)!=(size_t)size){
+        printf("ERROR");
+        return;
+    }
+    free(long_var);
+
+    printf("%c %s (%d) : %d", side, pk, node_id, offset);
+
+    printnode(_level+1, level, indexFileHandler, node_id*2+1, 'l');
+    printnode(_level+1, level, indexFileHandler, node_id*2+2, 'r');
+
+    
     return;
 }
 
 void printTree(size_t level, const char * indexName)
 {
+    int offset_borrado;
+    FILE *f = NULL;
+    f = fopen(indexName, "rb");
+    if(f == NULL){
+        return;
+    }
+
+    fread(&offset_borrado, sizeof(int), 4, f);
+
+    printnode(0, level, f, 0, 'l');
+
+    fclose(f);
     return;
 }
 
