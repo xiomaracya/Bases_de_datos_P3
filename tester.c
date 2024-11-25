@@ -25,10 +25,10 @@ void checkCreateIndex(const char * indexName);
 void checkCreateTable(const char * tableName);
 
 void checkPrint(const char * indexName);
-void createTestIndexFile(const char * indexName);
+/*void createTestIndexFile(const char * indexName);
 void checkFindKey(const char * indexName);
 void checkAddIndexEntry(const char * indexName);
-
+*/
 
 int main() {
     const char *tableName = "myDataBase.dat";
@@ -44,10 +44,10 @@ int main() {
      * implement it
      * checkReplaceExtensionByIdx(tableName, indexName); */
     checkCreateIndex(indexName);
-    /*checkCreateTable(tableName);
+    checkCreateTable(tableName);
     createTestFiles(tableName, indexName);
     checkPrint(indexName);
-    checkFindKey(indexName);
+    /*checkFindKey(indexName);
     checkAddIndexEntry(indexName);*/
 #ifdef NEVERDEFINED
 #endif
