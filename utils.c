@@ -68,29 +68,28 @@ void printnode(size_t _level, size_t level, FILE * indexFileHandler, int node_id
     int h1= 0, h2=0 , p= 0, datos= 0, i;
     char pk[5] = {0};
 
+    long offset = 8 + node_id * (4+4*sizeof(int));
+    if (fseek(indexFileHandler, offset, SEEK_SET) != 0) {
+        return;
+    }
+
     if (_level >= level) {
-        printf("Profundidad máxima alcanzada");
         return;
     }
 
     if(fread(pk, sizeof(char), sizeof(pk)-1, indexFileHandler)!=sizeof(pk)-1){
-        printf("ERROR1");
         return;
     }
     if(fread(&h1, sizeof(int), 1, indexFileHandler)!=1){
-        printf("ERROR2");
         return;
     }
     if(fread(&h2, sizeof(int), 1, indexFileHandler)!=1){
-        printf("ERROR3");
         return;
     }
     if(fread(&p, sizeof(int), 1, indexFileHandler)!=1){
-        printf("ERROR4");
         return;
     }
     if(fread(&datos, sizeof(int), 1, indexFileHandler)!=1){
-        printf("ERROR5");
         return;
     }
 
@@ -99,28 +98,37 @@ void printnode(size_t _level, size_t level, FILE * indexFileHandler, int node_id
     }
     printf("%c %s (%d) : %d\n", side, pk, node_id, datos);
 
-    fseek(indexFileHandler, h1, SEEK_SET);
-    printnode(_level + 1, level, indexFileHandler, node_id*2+1, 'l');
-    fseek(indexFileHandler, h2, SEEK_SET);
-    printnode(_level + 1, level, indexFileHandler, node_id*2+2, 'r');
+    if(h1!=-1){
+        printnode(_level + 1, level, indexFileHandler, h1, 'l');
+    }
+    if(h2!=-1){
+        printnode(_level + 1, level, indexFileHandler, h2, 'r');
+    }
     return;
 }
 
 void printTree(size_t level, const char * indexName)
 {
     FILE *f = NULL;
-    int loc_root = -1;
+    int loc_root = -1, borrados = -1;
     f = fopen(indexName, "rb");
     if (f == NULL){
-        printf("Error al abrir el fichero");
         return;
     }
     if (fread(&loc_root, sizeof(int), 1, f) != 1 || loc_root < 0){
         fclose(f);
-        printf("El fichero esta vacío");
         return;
     }
-    fseek(f, loc_root, SEEK_SET);
+    if (fread(&borrados, sizeof(int), 1, f) != 1){
+        fclose(f);
+        return;
+    }
+    /*printf("\nSEEK: %d\n", SEEK_CUR);*/
+    /*printf("\nSEEK SET: %d\n", SEEK_SET);*/
+    if(fseek(f, loc_root, SEEK_CUR)!=0){
+        return;
+    }
+    /*printf("\nSEEK: %d\n", SEEK_CUR);*/
     printnode(0, level, f, 0,' ');
     if (f){
         fclose(f);
