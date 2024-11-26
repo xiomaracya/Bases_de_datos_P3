@@ -36,7 +36,6 @@ void checkPrint(const char * indexName)
         if (strstr(buffer, sort_a[i]) == NULL){
             printf("checkPrint line '%s' does not contain prinary key %s\n",
                    buffer, pk);
-            printTree(4, indexName);
             exit(1);
         }
     }
