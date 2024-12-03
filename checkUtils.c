@@ -253,6 +253,16 @@ void fillTesterArray()
 
 }
 
+void freeTesterArray(){
+    int i;
+    for (i = 0; i < TEST_ARRAY_SIZE; i++) {
+        if (b[i].title != NULL) {
+            free(b[i].title);
+            b[i].title = NULL;
+        }
+    }
+}
+
 void createTestIndexFile(const char * indexName)
 /**
  * create test index ile
@@ -274,6 +284,7 @@ void createTestIndexFile(const char * indexName)
     for(i=0; i< TEST_ARRAY_SIZE; i++)
         fwrite(&(a[i]), sizeof(Node), 1, indexFileHandler);
     fclose(indexFileHandler);
+    freeTesterArray();
 }
 
 void createTestDataFile(const char * dataName)
@@ -305,6 +316,7 @@ void createTestDataFile(const char * dataName)
         fwrite(b[i].title, b[i].title_len, 1, indexFileHandler);
     }
     fclose(indexFileHandler);
+    freeTesterArray();
 }
 
 void createTestFiles(const char * tableName,

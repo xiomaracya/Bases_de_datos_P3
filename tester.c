@@ -25,10 +25,10 @@ void checkCreateIndex(const char * indexName);
 void checkCreateTable(const char * tableName);
 
 void checkPrint(const char * indexName);
-/*void createTestIndexFile(const char * indexName);
+void createTestIndexFile(const char * indexName);
 void checkFindKey(const char * indexName);
 void checkAddIndexEntry(const char * indexName);
-*/
+
 
 int main() {
     const char *tableName = "myDataBase.dat";
@@ -47,8 +47,8 @@ int main() {
     checkCreateTable(tableName);
     createTestFiles(tableName, indexName);
     checkPrint(indexName);
-    /*checkFindKey(indexName);
-    checkAddIndexEntry(indexName);*/
+    checkFindKey(indexName);
+    /*checkAddIndexEntry(indexName);*/
 #ifdef NEVERDEFINED
 #endif
     return (0);
