@@ -21,6 +21,7 @@ void createTestFiles(const char * tableName,
 
 void SwapIOB(FILE *A, FILE *B);
 void fillTesterArray();
+void freeTesterArray();
 /* array 9 nodes for testing */
 #define TEST_ARRAY_SIZE 11
 #define SORTED_TEST_ARRAY_SIZE 9
@@ -28,3 +29,4 @@ extern Node a[TEST_ARRAY_SIZE];
 extern char sort_a[SORTED_TEST_ARRAY_SIZE][PK_SIZE+1];
 extern Book b[TEST_ARRAY_SIZE];
 #endif /* CODE_V2_TESTER_H */
+
