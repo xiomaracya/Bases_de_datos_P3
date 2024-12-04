@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #define BufferLength 100
+#define INDEX_REGISTER_SIZE (4 + 4 * sizeof(int))
+#define INDEX_HEADER_SIZE 8
 
 int no_deleted_registers = NO_DELETED_REGISTERS;
 
@@ -79,15 +81,11 @@ void printnode(size_t _level, size_t level, FILE *indexFileHandler, int node_id,
     int h1 = 0, h2 = 0, p = 0, datos = 0, i;
     char pk[5] = {0};
 
-    long offset = 8 + node_id * (4 + 4 * sizeof(int));
+    long offset = INDEX_HEADER_SIZE + node_id * INDEX_REGISTER_SIZE;
     if (fseek(indexFileHandler, offset, SEEK_SET) != 0)
     {
         return;
     }
-
-    printf("NODE_ID: %d ", node_id);
-
-    printf("OFFSET: %ld ", offset);
 
     if (_level >= level)
     {
@@ -170,6 +168,8 @@ bool findKey(const char *book_id, const char *indexName,
     char pk[5] = {0};
     FILE *f;
     int current_node;
+    long offset;
+
     f = fopen(indexName, "rb");
     if (f == NULL)
     {
@@ -194,7 +194,7 @@ bool findKey(const char *book_id, const char *indexName,
 
     while (current_node != -1)
     {
-        long offset = 8 + current_node * (4 + 4 * sizeof(int));
+        offset = INDEX_HEADER_SIZE + current_node * INDEX_REGISTER_SIZE;
         if (fseek(f, offset, SEEK_SET) != 0)
         {
             return false;
@@ -221,20 +221,25 @@ bool findKey(const char *book_id, const char *indexName,
             return false;
         }
 
-        if (strncmp(book_id, pk, 4*sizeof(char)) == 0)
+        if (strncmp(book_id, pk, 4 * sizeof(char)) == 0)
         {
             *nodeIDOrDataOffset = datos;
             fclose(f);
             return true;
-        } else if (h1 == -1 && h2 == -1)
+        }
+        else if (h1 == -1 && h2 == -1)
         {
             *nodeIDOrDataOffset = current_node;
             fclose(f);
             return false;
-        } else if(strcmp(book_id,pk) < 0){
+        }
+        else if (strcmp(book_id, pk) < 0)
+        {
             *nodeIDOrDataOffset = current_node;
             current_node = h1;
-        } else{
+        }
+        else
+        {
             *nodeIDOrDataOffset = current_node;
             current_node = h2;
         }
@@ -244,11 +249,148 @@ bool findKey(const char *book_id, const char *indexName,
 }
 bool addIndexEntry(char *book_id, int bookOffset, char const *indexName)
 {
+    int nodeIDorDataOffset, loc_root, borrados;
+    long new_node_id;
+    char pk[5] = {0};
+    FILE *f = NULL;
+    int sin_nodo = -1;
+    long offset;
+    printf("La clave a añadir es %s\n", book_id);
+    printf("El bookoffset es %d\n", bookOffset);
+
+    if (findKey(book_id, indexName, &nodeIDorDataOffset) == true)
+    {
+        printf("La clave ya está en el índice\n");
+        return false;
+    }
+    printf("El nodeIDorDataOffSet hallado con findKey es %d\n", nodeIDorDataOffset);
+    f = fopen(indexName, "r+b");
+    if (f == NULL)
+    {
+        printf("ERROR1");
+        return false;
+    }
+
+    if (fread(&loc_root, sizeof(int), 1, f) != 1 || loc_root < 0)
+    {
+        fclose(f);
+        return false;
+    }
+    if (fread(&borrados, sizeof(int), 1, f) != 1)
+    {
+        fclose(f);
+        return false;
+    }
+
+    if(borrados == -1){
+        fseek(f, 0, SEEK_END);
+        new_node_id = ftell(f);
+        new_node_id=(new_node_id-DATA_HEADER_SIZE)/INDEX_REGISTER_SIZE;
+    } else {
+        new_node_id = borrados;
+        printf("Hay registros borrados\n");
+    } 
+    printf("new_node_id = %ld\n", new_node_id);
+
+
+    offset = INDEX_HEADER_SIZE + nodeIDorDataOffset * INDEX_REGISTER_SIZE;
+
+    if (fseek(f, offset, SEEK_SET) != 0)
+    {
+        return false;
+    }
+
+    if (fread(pk, sizeof(char), sizeof(pk) - 1, f) != sizeof(pk) - 1)
+    {
+        return false;
+    }
+
+    printf("Leemos la pk: %s\n", pk);
+
+    if(strncmp(pk, book_id, 4*sizeof(int))<0){
+        printf("Insertamos al lado derecho\n");
+        if(fseek(f, offset+8, SEEK_SET) != 0){
+            return false;
+        }
+        fwrite(&new_node_id, sizeof(char), 4, f);
+    } else{
+        printf("Insertamos al lado iquierdo\n");
+        if(fseek(f, offset+4, SEEK_SET) != 0){
+            return false;
+        }
+        fwrite(&new_node_id, sizeof(char), 4, f);
+    }
+
+    offset = INDEX_HEADER_SIZE + new_node_id * INDEX_REGISTER_SIZE;
+
+    if (fseek(f, offset, SEEK_SET) != 0)
+    {
+        return false;
+    }
+    printf("El registro borrado incial es %d\n", borrados);
+
+    if(borrados!=-1){
+        borrados = fread(&borrados, sizeof(int), 1, f);
+        printf("El nuevo registro borrado es %d\n", borrados);
+        if (fseek(f, 4, SEEK_SET) != 0)
+        {
+            return false;
+        }
+        fwrite(&borrados, sizeof(int), 1, f);
+    }
+
+    if (fseek(f, offset, SEEK_SET) != 0)
+    {
+        return false;
+    }
+
+    fwrite(book_id, sizeof(char), 4, f);
+    fwrite(&sin_nodo, sizeof(int), 1, f);
+    fwrite(&sin_nodo, sizeof(int), 1, f);
+    fwrite(&nodeIDorDataOffset, sizeof(int), 1, f);
+    fwrite(&bookOffset, sizeof(int), 1, f);
+
+    fclose(f);
+    printf("Se ha añadido la clave\n\n");
+
     return true;
 }
 
 bool addTableEntry(Book *book, const char *dataName,
                    const char *indexName)
 {
+    int borrados;
+    int nodeIDorDataOffset;
+    FILE *f = NULL;
+    int bookoffset = 0;
+
+    if (findKey(book->book_id, dataName, &nodeIDorDataOffset) == true)
+    {
+        return false;
+    }
+    f = fopen(dataName, "r+b");
+    if (f == NULL)
+    {
+        return false;
+    }
+
+    if (fread(&borrados, sizeof(int), 1, f) != 1)
+    {
+        fclose(f);
+        return false;
+    }
+
+    if (borrados == -1)
+    {
+        fwrite(book->book_id, sizeof(char), 4, f);
+        fwrite(&book->title_len, sizeof(size_t), 1, f);
+        fwrite(book->title, sizeof(char), book->title_len, f);
+    }
+    else
+    {
+        printf("borrados: %d", borrados);
+    }
+    addIndexEntry(book->book_id, bookoffset, indexName);
+    fclose(f);
     return true;
 }
