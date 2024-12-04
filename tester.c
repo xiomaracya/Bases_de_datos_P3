@@ -48,9 +48,10 @@ int main() {
     createTestFiles(tableName, indexName);
     checkPrint(indexName);
     checkFindKey(indexName);
-    /*checkAddIndexEntry(indexName);*/
+    checkAddIndexEntry(indexName);
 #ifdef NEVERDEFINED
 #endif
     return (0);
 }
+
 
