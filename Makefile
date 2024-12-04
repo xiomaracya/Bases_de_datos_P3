@@ -18,6 +18,9 @@ checkCreateIndex.o checkPrint.o checkFindKey.o checkAddIndexEntry.o
 $EXE: $(DEPS) $(OBJ)
 	$(CC) -o $(EXE) $(OBJ) $(LDLIBS)
 
+menu: $(DEPS) utils.o menu.o
+	$(CC) -o menu utils.o menu.o $(LDLIBS)
+
 clean :
 	rm -f *.o core $(EXE)
 
