@@ -45,12 +45,11 @@ int main() {
      * checkReplaceExtensionByIdx(tableName, indexName); */
     checkCreateIndex(indexName);
     checkCreateTable(tableName);
-    /*createTestFiles(tableName, indexName);
+    createTestFiles(tableName, indexName);
     checkPrint(indexName);
     checkFindKey(indexName);
-    checkAddIndexEntry(indexName);*/
+    checkAddIndexEntry(indexName);
 #ifdef NEVERDEFINED
 #endif
     return (0);
 }
-
