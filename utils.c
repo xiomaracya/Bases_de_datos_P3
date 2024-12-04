@@ -323,14 +323,16 @@ bool addIndexEntry(char *book_id, int bookOffset, char const *indexName)
 
     offset = INDEX_HEADER_SIZE + new_node_id * INDEX_REGISTER_SIZE;
 
-    if (fseek(f, offset, SEEK_SET) != 0)
-    {
-        return false;
-    }
     printf("El registro borrado incial es %d\n", borrados);
 
     if(borrados!=-1){
-        borrados = fread(&borrados, sizeof(int), 1, f);
+        if (fseek(f, offset+4, SEEK_SET) != 0)
+        {
+            return false;
+        }
+        if(fread(&borrados, sizeof(int), 1, f)!=1){
+            return false;
+        }
         printf("El nuevo registro borrado es %d\n", borrados);
         if (fseek(f, 4, SEEK_SET) != 0)
         {
