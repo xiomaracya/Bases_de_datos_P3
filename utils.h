@@ -4,14 +4,16 @@
 
 #ifndef CODE_V2_UTILS_H
 #define CODE_V2_UTILS_H
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #define NO_DELETED_REGISTERS -1
 
 #define INDEX_HEADER_SIZE 8
 #define DATA_HEADER_SIZE  4
 #define PK_SIZE 4
+#define INDEX_REGISTER_SIZE (4 + 4 * sizeof(int))
+#define INDEX_HEADER_SIZE 8
 
 /* Our table is going to contain a string (title) and
    an alphanumeric primary key (book_id)

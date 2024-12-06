@@ -1,26 +1,36 @@
 #include "utils.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #define BufferLength 100
-#define INDEX_REGISTER_SIZE (4 + 4 * sizeof(int))
-#define INDEX_HEADER_SIZE 8
 
 int no_deleted_registers = NO_DELETED_REGISTERS;
 
 void replaceExtensionByIdx(const char *fileName, char *indexName)
 {
-    char name[BufferLength] = "\0";
-    strcpy(name, fileName);
-    indexName = strtok(name, ".");
-    strcat(indexName, ".idx");
-    return;
+    const char *dot = strrchr(fileName, '.');
+    
+    if (dot == NULL || strlen(dot) != 4) {
+        strcpy(indexName, fileName);
+    } else {
+        size_t len = dot - fileName;
+        strncpy(indexName, fileName, len);
+        indexName[len] = '\0';
+
+        strcat(indexName, ".idx");
+    }
 }
 
 bool createTable(const char *tableName)
 {
     FILE *f = NULL;
     int element = -1;
-    char *indexName = "\0";
+    char *indexName;
+    indexName = (char*)malloc(sizeof(char)*BufferLength);
+    if(indexName==NULL){
+        return false;
+    }
+    strcpy(indexName, "\0");
 
     f = fopen(tableName, "rb");
     if (f == NULL)
@@ -28,11 +38,13 @@ bool createTable(const char *tableName)
         f = fopen(tableName, "wb");
         if (f == NULL)
         {
+            free(indexName);
             return false;
         }
         if (fwrite(&element, sizeof(int), 1, f) != 1)
         {
             fclose(f);
+            free(indexName);
             return false;
         }
     }
@@ -42,10 +54,12 @@ bool createTable(const char *tableName)
     if (createIndex(indexName) == false)
     {
         fclose(f);
+        free(indexName);
         return false;
     }
 
     fclose(f);
+    free(indexName);
     return true;
 }
 

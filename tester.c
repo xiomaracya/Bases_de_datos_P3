@@ -39,10 +39,7 @@ int main() {
     remove(indexName);
 
     /* Start testing */
-    /* uncomment this test if you find the function
-     * repalceExtensionByIdx() useful and you want to
-     * implement it
-     * checkReplaceExtensionByIdx(tableName, indexName); */
+    checkReplaceExtensionByIdx(tableName, indexName);
     checkCreateIndex(indexName);
     checkCreateTable(tableName);
     createTestFiles(tableName, indexName);

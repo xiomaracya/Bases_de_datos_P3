@@ -4,7 +4,7 @@
 #include <strings.h>
 #include "utils.h"
 
-#define BUFFER 16
+#define BUFFER 100
 
 char *showUse();
 void showInsert(char *dataname, char *indexname);
@@ -14,8 +14,8 @@ int ShowMainMenu();
 int main()
 {
     char *dataname = "\0";
-    char *indexname = "\0";
     int nChoice = 0;
+    char *indexname;
 
     do
     {
@@ -25,6 +25,15 @@ int main()
         case 1:
         {
             dataname = showUse();
+            if(dataname == NULL){
+                return 1;
+            }
+            indexname = (char*)malloc(BUFFER*sizeof(char));
+            if(indexname == NULL){
+                free(dataname);
+                return 1;
+            }
+            replaceExtensionByIdx(dataname, indexname);
         }
         break;
 
@@ -33,7 +42,6 @@ int main()
             if (strcmp(dataname, "\0")==0){
                 printf("There is no table in use");
             }else {
-                replaceExtensionByIdx(dataname, indexname);
                 showInsert(dataname, indexname);
             }
         }
@@ -41,7 +49,11 @@ int main()
 
         case 3:
         {
-            showPrint(indexname);
+            if (strcmp(dataname, "\0")==0){
+                printf("There is no table in use");
+            }else {
+                showPrint(indexname);
+            }
         }
         break;
 
@@ -52,6 +64,10 @@ int main()
         break;
         }
     } while (nChoice != 4);
+    if(strcmp(dataname, "\0")){
+        free(dataname);
+        free(indexname);
+    }
     return 0;
 }
 
@@ -78,18 +94,19 @@ int ShowMainMenu()
 
     do
     {
-        printf("This is the menu of classicmodels database\n");
-        printf("You can choose to display a number of different tables\n\n");
+        printf("\nMENU\n");
+        printf("You can choose what you want to do\n\n");
 
         printf(" USE\n"
                " INSERT\n"
                " PRINT\n"
                " EXIT\n\n"
                "Enter your choice > ");
-        printf("\n");
+        strcpy(buf, "\0");
         if (!fgets(buf, BUFFER, stdin)){
             nSelected = 0;
         }
+        buf[strlen(buf)-1]='\0';
             /* reading input failed, give up: */
         if (strcasecmp(buf, use)==0){
             nSelected = 1;
@@ -114,19 +131,28 @@ int ShowMainMenu()
 }
 
 char *showUse(){
-    char name[BUFFER] = "\0";
+    char *name;
+    name = (char*)malloc(BUFFER*sizeof(char));
+    if(name == NULL){
+        return NULL;
+    }
 
     printf("Enter the table name >");
     if (!fgets(name , BUFFER, stdin)){
+        free(name);
         return NULL;
     }
+    name[strlen(name)-1]='\0';
+    printf("The table |%s| is ready\n", name);
     createTable(name);
     return name;
 }
-void showInsert(char *dataname, char*indexname){
+void showInsert(char *dataname, char *indexname){
     Book *book = NULL;
     char pk[BUFFER] = "\0";
     char title[BUFFER] = "\0";
+
+    replaceExtensionByIdx(dataname, indexname);
 
     book = (Book*)malloc(sizeof(Book));
     if (book == NULL){
@@ -135,10 +161,12 @@ void showInsert(char *dataname, char*indexname){
     }
     printf("Enter the key >");
     if (!fgets(pk , BUFFER, stdin)){
+        free(book);
         return;
     }
     printf("Enter the title >");
     if (!fgets(title , BUFFER, stdin)){
+        free(book);
         return;
     }
 
@@ -148,7 +176,28 @@ void showInsert(char *dataname, char*indexname){
     return;
 }
 void showPrint(char *indexname){
-    int level = -1;
+    int level = 0;
+    int number_nodes;
+    int i;
+    FILE *f = NULL;
+
+    f = fopen(indexname, "rb");
+    if(f==NULL){
+        
+        return;
+    }
+    printf("The table is going to be printed\n");
+    fseek(f, 0, SEEK_END);
+    number_nodes = ftell(f);
+    number_nodes=(number_nodes-DATA_HEADER_SIZE)/INDEX_REGISTER_SIZE;
+    if(number_nodes==0){
+        printf("El árbol está vacío");
+        return;
+    }
+    for(i=0; 1<number_nodes; i++){
+        number_nodes/=2;
+        level++;
+    }
     printTree(level, indexname);
     return;
 }
