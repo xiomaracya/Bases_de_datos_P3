@@ -8,17 +8,25 @@ int no_deleted_registers = NO_DELETED_REGISTERS;
 
 void replaceExtensionByIdx(const char *fileName, char *indexName)
 {
-    const char *dot = strrchr(fileName, '.');
-    
-    if (dot == NULL || strlen(dot) != 4) {
-        strcpy(indexName, fileName);
-    } else {
-        size_t len = dot - fileName;
-        strncpy(indexName, fileName, len);
-        indexName[len] = '\0';
+    char *name;
+    char *extension;
+    char *aux;
 
-        strcat(indexName, ".idx");
+    aux = (char*)malloc((strlen(fileName)+1)*sizeof(char));
+    if(aux == NULL){
+        return;
     }
+
+    strcpy(aux, fileName);
+    name = strtok(aux, ".");
+    extension = strtok(NULL, ".");
+
+    if (extension != NULL && strlen(extension) == 3) {
+        sprintf(indexName, "%s.idx", name);
+    } else {
+        strcpy(indexName, fileName);
+    }
+    free(aux);
 }
 
 bool createTable(const char *tableName)
