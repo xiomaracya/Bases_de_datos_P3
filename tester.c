@@ -28,6 +28,7 @@ void checkPrint(const char * indexName);
 void createTestIndexFile(const char * indexName);
 void checkFindKey(const char * indexName);
 void checkAddIndexEntry(const char * indexName);
+void checkAddTableEntry(const char *tableName);
 
 
 int main() {
@@ -46,6 +47,7 @@ int main() {
     checkPrint(indexName);
     checkFindKey(indexName);
     checkAddIndexEntry(indexName);
+    checkAddTableEntry(tableName);
 #ifdef NEVERDEFINED
 #endif
     return (0);

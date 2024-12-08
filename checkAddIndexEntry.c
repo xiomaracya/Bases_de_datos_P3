@@ -83,7 +83,7 @@ void checkAddIndexEntry(const char * indexName)
     fread(&tmp, sizeof(int), 1, fp);
     if (tmp!=deleted){
         fprintf(stderr,
-                "Error in addIndexEntry, first int in file should be %d"
+                "Error in acheckAddIndexEntry.cddIndexEntry, first int in file should be %d"
                 " but ir is %d", deleted, tmp);
         exit(EXIT_FAILURE);
     }

@@ -143,7 +143,7 @@ char *showUse(){
         return NULL;
     }
     name[strlen(name)-1]='\0';
-    printf("The table |%s| is ready\n", name);
+    printf("The table %s is ready\n", name);
     createTable(name);
     return name;
 }
@@ -151,8 +151,6 @@ void showInsert(char *dataname, char *indexname){
     Book *book = NULL;
     char pk[BUFFER] = "\0";
     char title[BUFFER] = "\0";
-
-    replaceExtensionByIdx(dataname, indexname);
 
     book = (Book*)malloc(sizeof(Book));
     if (book == NULL){
@@ -170,13 +168,14 @@ void showInsert(char *dataname, char *indexname){
         return;
     }
 
+    strcpy(book->book_id, pk);
     book->title = title;
     book->title_len = strlen(title);
     addTableEntry(book, dataname, indexname);
     return;
 }
 void showPrint(char *indexname){
-    int level = 0;
+    int level = 1;
     int number_nodes;
     int i;
     FILE *f = NULL;
@@ -189,15 +188,15 @@ void showPrint(char *indexname){
     printf("The table is going to be printed\n");
     fseek(f, 0, SEEK_END);
     number_nodes = ftell(f);
-    number_nodes=(number_nodes-DATA_HEADER_SIZE)/INDEX_REGISTER_SIZE;
+    number_nodes=(number_nodes-INDEX_HEADER_SIZE)/INDEX_REGISTER_SIZE;
     if(number_nodes==0){
-        printf("El árbol está vacío");
+        printf("The tree is empty");
         return;
     }
     for(i=0; 1<number_nodes; i++){
         number_nodes/=2;
         level++;
     }
-    printTree(level, indexname);
+    printTree(level+100, indexname);
     return;
 }

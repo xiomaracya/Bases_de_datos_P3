@@ -109,7 +109,7 @@ void printnode(size_t _level, size_t level, FILE *indexFileHandler, int node_id,
         return;
     }
 
-    if (_level >= level)
+    if (_level > level)
     {
         return;
     }
@@ -143,11 +143,11 @@ void printnode(size_t _level, size_t level, FILE *indexFileHandler, int node_id,
 
     if (h1 != -1)
     {
-        printnode(_level + 1, level, indexFileHandler, h1, 'l');
+        printnode(_level+1, level, indexFileHandler, h1, 'l');
     }
     if (h2 != -1)
     {
-        printnode(_level + 1, level, indexFileHandler, h2, 'r');
+        printnode(_level+1, level, indexFileHandler, h2, 'r');
     }
     return;
 }
@@ -307,7 +307,7 @@ bool addIndexEntry(char *book_id, int bookOffset, char const *indexName)
     if(borrados == -1){
         fseek(f, 0, SEEK_END);
         new_node_id = ftell(f);
-        new_node_id=(new_node_id-DATA_HEADER_SIZE)/INDEX_REGISTER_SIZE;
+        new_node_id=(new_node_id-INDEX_HEADER_SIZE)/INDEX_REGISTER_SIZE;
     } else {
         new_node_id = borrados;
         printf("Hay registros borrados\n");
@@ -387,16 +387,27 @@ bool addTableEntry(Book *book, const char *dataName,
     int nodeIDorDataOffset;
     FILE *f = NULL;
     int bookoffset = 0;
+    int borrado_size = 0;
+    int new_borrado;
 
-    if (findKey(book->book_id, dataName, &nodeIDorDataOffset) == true)
-    {
+    if(dataName == NULL || indexName == NULL){
         return false;
     }
-    f = fopen(dataName, "r+b");
+
+    f = fopen(dataName, "rb+");
     if (f == NULL)
     {
         return false;
     }
+
+
+    if (findKey(book->book_id, indexName, &nodeIDorDataOffset) == true)
+    {
+        printf("La clave ya existe\n");
+        return false;
+    }
+
+    fseek(f,0,SEEK_SET);
 
     if (fread(&borrados, sizeof(int), 1, f) != 1)
     {
@@ -404,16 +415,54 @@ bool addTableEntry(Book *book, const char *dataName,
         return false;
     }
 
-    if (borrados == -1)
+    printf("Borrados es igual a %d\n", borrados);
+
+    if(borrados == 0){
+        new_borrado = -1;
+        fseek(f, 0, SEEK_SET);
+        fwrite(&new_borrado, sizeof(int),1,f);
+        fseek(f, 0, SEEK_END);
+        bookoffset = ftell(f);
+        fwrite(book->book_id, sizeof(char), 4, f);
+        fwrite(&book->title_len, sizeof(size_t), 1, f);
+        fwrite(book->title, sizeof(char), book->title_len, f);
+    } else if (borrados == -1)
     {
+        fseek(f, 0, SEEK_END);
+        bookoffset = ftell(f);
         fwrite(book->book_id, sizeof(char), 4, f);
         fwrite(&book->title_len, sizeof(size_t), 1, f);
         fwrite(book->title, sizeof(char), book->title_len, f);
     }
     else
     {
-        printf("borrados: %d", borrados);
+        bookoffset = borrados;
+        printf("Hay registros borrados y el offset es %d\n", bookoffset);
+        while(book->title_len+5>(size_t)borrado_size){
+            fseek(f, borrados, SEEK_SET);
+            fread(&borrados, sizeof(int), 1, f);
+            printf("El siguiente registro borrado es %d\n", borrados);
+            fread(&borrado_size, sizeof(int), 1, f);
+            printf("El tamaño de este registro es %d\n", borrado_size);
+        }
+
+
+        fseek(f, bookoffset, SEEK_SET);
+        fwrite(book->book_id, sizeof(char), 4, f);
+        fwrite(&book->title_len, sizeof(size_t), 1, f);
+        fwrite(book->title, sizeof(char), book->title_len, f);
+        if(borrado_size-5-book->title_len >= 6){
+            new_borrado = bookoffset + 4 + 1 + book->title_len;
+            fwrite(&borrados, sizeof(int), 1, f);
+            borrado_size = borrado_size-5-book->title_len;
+            fwrite(&borrado_size, sizeof(int),1,f);
+            borrados = new_borrado;
+        }
+        printf("Borrados tiene el valor de %d\n", borrados);
+        fseek(f, 0, SEEK_SET);
+        fwrite(&borrados, sizeof(int), 4, f);
     }
+
     addIndexEntry(book->book_id, bookoffset, indexName);
     fclose(f);
     return true;

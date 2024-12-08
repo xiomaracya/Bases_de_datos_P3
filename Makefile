@@ -7,7 +7,7 @@ HEADERS = utils.h
 
 EXE = tester
 OBJ = $(EXE).o utils.o checkUtils.o checkCreateTable.o checkReplaceExtensionByIdx.o \
-checkCreateIndex.o checkPrint.o checkFindKey.o checkAddIndexEntry.o
+checkCreateIndex.o checkPrint.o checkFindKey.o checkAddIndexEntry.o checkAddTableEntry.o
 #all : $(EXE)
 
 

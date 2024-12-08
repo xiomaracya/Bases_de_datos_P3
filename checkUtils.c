@@ -310,10 +310,11 @@ void createTestDataFile(const char * dataName)
             fwrite(&(a[8].offset), sizeof(int), 1, indexFileHandler);
         else if (i==8) /* offset to next deleted node */
             fwrite(&(endChain), sizeof(int), 1, indexFileHandler);
-        else
+        else{
             fwrite(&(b[i].book_id), sizeof(int), 1, indexFileHandler);
-        fwrite(&(b[i].title_len), sizeof(int), 1, indexFileHandler);
-        fwrite(b[i].title, b[i].title_len, 1, indexFileHandler);
+            fwrite(&(b[i].title_len), sizeof(int), 1, indexFileHandler);
+            fwrite(b[i].title, b[i].title_len, 1, indexFileHandler);
+        }
     }
     fclose(indexFileHandler);
     freeTesterArray();
