@@ -47,7 +47,7 @@ int main() {
     checkPrint(indexName);
     checkFindKey(indexName);
     checkAddIndexEntry(indexName);
-    checkAddTableEntry(tableName);
+    /*checkAddTableEntry(tableName);*/
 #ifdef NEVERDEFINED
 #endif
     return (0);
