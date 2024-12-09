@@ -287,7 +287,6 @@ void createTestIndexFile(const char * indexName)
     freeTesterArray();
 }
 
-
 void createTestDataFile(const char * dataName)
 /**
  * create test index ile

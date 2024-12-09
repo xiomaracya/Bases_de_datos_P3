@@ -387,14 +387,14 @@ bool addTableEntry(Book *book, const char *dataName,
     int nodeIDorDataOffset;
     FILE *f = NULL;
     int bookoffset = 0;
-    size_t borrado_size = 0;
-    int new_borrado;
+    int borrado_size = 0;
+    int flag=0;
 
-    if(dataName == NULL || indexName == NULL){
+    if(!book || dataName == NULL || indexName == NULL){
         return false;
     }
 
-    f = fopen(dataName, "rb+");
+    f = fopen(dataName, "r+b");
     if (f == NULL)
     {
         return false;
@@ -416,44 +416,31 @@ bool addTableEntry(Book *book, const char *dataName,
     }
 
     printf("Borrados es igual a %d\n", borrados);
+    while((size_t)borrado_size<book->title_len && borrados!=-1){
+        bookoffset = borrados;
+        flag=1;
+        printf("bookoffset es %d", bookoffset);
+        fseek(f, bookoffset, SEEK_SET);
+        fread(&borrados, sizeof(int), 4, f);
+        fread(&borrado_size, sizeof(int), 1, f);
+        printf("Borrados tiene el valor de %d", borrados);
+        printf("Borrados_size tiene el valor de %d", borrado_size);
+    }
+    if(flag==1){
+        fseek(f, 0, SEEK_SET);
+        fwrite(&borrados, sizeof(int), 4, f);
+    }
 
     if (borrados == -1)
     {
         fseek(f, 0, SEEK_END);
         bookoffset = ftell(f);
-        fwrite(book->book_id, sizeof(char), 4, f);
-        fwrite(&book->title_len, sizeof(size_t), 1, f);
-        fwrite(book->title, sizeof(char), book->title_len, f);
     }
-    else
-    {
-        bookoffset = borrados;
-        printf("Hay registros borrados y el offset es %d\n", bookoffset);
-        while(book->title_len+5>(size_t)borrado_size){
-            fseek(f, borrados, SEEK_SET);
-            fread(&borrados, sizeof(int), 4, f);
-            printf("El siguiente registro borrado es %d\n", borrados);
-            fread(&borrado_size, sizeof(size_t), 1, f);
-            printf("El tamaño de este registro es %ld\n", borrado_size);
-        }
 
-
-        fseek(f, bookoffset, SEEK_SET);
-        fwrite(book->book_id, sizeof(char), 4, f);
-        fwrite(&book->title_len, sizeof(size_t), 1, f);
-        fwrite(book->title, sizeof(char), book->title_len, f);
-        if(borrado_size-5-book->title_len >= 6){
-            printf("Creando otro hueco\n");
-            new_borrado = bookoffset + 4 + 1 + book->title_len;
-            fwrite(&borrados, sizeof(int), 1, f);
-            borrado_size = borrado_size-5-book->title_len;
-            fwrite(&borrado_size, sizeof(size_t),1,f);
-            borrados = new_borrado;
-        }
-        printf("Borrados tiene el valor de %d\n", borrados);
-        fseek(f, 0, SEEK_SET);
-        fwrite(&borrados, sizeof(int), 4, f);
-    }
+    fseek(f, bookoffset, SEEK_SET);
+    fwrite(book->book_id, sizeof(char), 4, f);
+    fwrite(&book->title_len, sizeof(size_t), 1, f);
+    fwrite(book->title, sizeof(char), book->title_len, f);
 
     addIndexEntry(book->book_id, bookoffset, indexName);
     fclose(f);
